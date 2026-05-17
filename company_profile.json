@@ -1,0 +1,46 @@
+{
+  "company_name": "TechBuild Infrastructure Pvt Ltd",
+  "registration_number": "CIN-U45200DL2015PTC123456",
+  "pan": "AABCT1234A",
+  "gstin": "07AABCT1234A1Z5",
+  "experience_years": 8,
+  "annual_turnover_crore": 25,
+  "net_worth_crore": 12,
+  "specialization": [
+    "Road Construction",
+    "Highway Development",
+    "IT Infrastructure",
+    "Software Development",
+    "Civil Works",
+    "Water Supply",
+    "Electrical Works",
+    "Building Construction"
+  ],
+  "past_projects": [
+    "NH-44 Road Widening, Delhi — 12 Cr",
+    "Smart City CCTV Network, Pune — 8 Cr",
+    "Municipal Water Pipeline, Noida — 5 Cr",
+    "Government Office IT Setup, Gurugram — 3 Cr"
+  ],
+  "max_emd_capacity_lakh": 50,
+  "max_project_value_crore": 30,
+  "preferred_tender_types": [
+    "Civil Works",
+    "IT Supply",
+    "Maintenance",
+    "Road Construction",
+    "Software"
+  ],
+  "excluded_states": [],
+  "min_match_score_for_alert": 65,
+  "certifications": [
+    "ISO 9001:2015",
+    "CPWD Registered Class A",
+    "NSIC Certified"
+  ],
+  "contact": {
+    "bd_manager": "Rajesh Kumar",
+    "email": "bd@techbuild.in",
+    "phone": "+91-9876543210"
+  }
+}

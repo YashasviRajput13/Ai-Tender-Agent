@@ -1,20 +1,26 @@
+"""
+agents.py — CrewAI Agent definitions for the Tender Intelligence Platform.
+All tool imports now use flat root-level paths.
+"""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from crewai import Agent
-import os
-from src.tools.scraper_tool import PlaywrightScraperTool
-from src.tools.pdf_tool import PDFExtractionTool
-from src.tools.db_tool import DatabaseStorageTool
-from src.tools.notification_tool import NotificationTool
+from tools.pdf_tool import PDFExtractionTool
+from tools.notification_tool import NotificationTool
+from scraper_tool import PlaywrightScraperTool
+from db_tool import DatabaseStorageTool
 
 
 def create_agents(llm):
-    """Instantiate and return all 7 CrewAI agents."""
+    """Instantiate and return all CrewAI agents."""
 
     scraper_agent = Agent(
-        role='Tender Scraper',
-        goal='Search and extract tender links and basic metadata from government procurement portals (e.g., CPPP).',
+        role="Tender Scraper",
+        goal="Search and extract active tender listings from the CPPP government procurement portal.",
         backstory=(
-            'You are an expert data extraction bot designed to navigate complex government portals, '
-            'avoid bot detection, and find the most relevant business opportunities.'
+            "You are an expert data extraction bot designed to navigate government portals, "
+            "handle bot detection, and return structured tender data for downstream analysis."
         ),
         tools=[PlaywrightScraperTool()],
         llm=llm,
@@ -23,11 +29,11 @@ def create_agents(llm):
     )
 
     pdf_agent = Agent(
-        role='PDF Processing Specialist',
-        goal='Download tender PDFs and extract all text content accurately.',
+        role="PDF Processing Specialist",
+        goal="Download tender documents and extract all structured content: budget, EMD, deadlines, eligibility.",
         backstory=(
-            'You specialize in parsing complex government PDF documents, ensuring no text, '
-            'table, or requirement is missed during the extraction process.'
+            "You specialize in parsing complex government PDF documents. "
+            "You never miss a budget figure, EMD requirement, or eligibility clause."
         ),
         tools=[PDFExtractionTool()],
         llm=llm,
@@ -36,11 +42,11 @@ def create_agents(llm):
     )
 
     analysis_agent = Agent(
-        role='Tender AI Analyst',
-        goal='Analyse raw tender text and extract structured key information (budget, EMD, deadlines, criteria).',
+        role="Tender AI Analyst",
+        goal="Analyse tender text and extract structured intelligence: budget, EMD, deadlines, type, and risk level.",
         backstory=(
-            'You are a seasoned government contractor who can quickly skim a 100-page tender document '
-            'and pinpoint the budget, deadlines, and eligibility requirements.'
+            "A seasoned government contractor who reads 100-page tender documents in minutes, "
+            "extracting every critical figure, requirement, and risk factor."
         ),
         llm=llm,
         verbose=True,
@@ -48,11 +54,11 @@ def create_agents(llm):
     )
 
     matching_agent = Agent(
-        role='Company Profile Matcher',
-        goal='Compare the extracted tender requirements against the company profile to determine eligibility.',
+        role="Company Profile Matcher",
+        goal="Compare tender requirements against the company profile to compute an eligibility and match score.",
         backstory=(
-            'You are the Head of Business Development. You know the company's capabilities, past experience, '
-            'and financial limits perfectly. You evaluate if a new tender is a good fit.'
+            "Head of Business Development. Knows the company's capabilities, past experience, "
+            "and financial limits perfectly. Evaluates every new tender with precision."
         ),
         llm=llm,
         verbose=True,
@@ -60,11 +66,11 @@ def create_agents(llm):
     )
 
     ranking_agent = Agent(
-        role='Opportunity Ranker',
-        goal='Assign a risk level, a match score (0-100), and a final Go/No-Go recommendation for each tender.',
+        role="Opportunity Ranker",
+        goal="Assign risk level (Low/Medium/High), match score (0-100), and Go/No-Go/Review recommendation.",
         backstory=(
-            'You are the Chief Risk Officer. You analyse match data and assess financial and operational risk, '
-            'ultimately producing a final numeric score and clear recommendation.'
+            "Chief Risk Officer. Analyses match data and financial risk, "
+            "producing a final numeric score and a clear, actionable recommendation."
         ),
         llm=llm,
         verbose=True,
@@ -72,11 +78,11 @@ def create_agents(llm):
     )
 
     db_agent = Agent(
-        role='Database Manager',
-        goal='Save the fully analysed and ranked tender into the database securely.',
+        role="Database Manager",
+        goal="Save fully analysed and ranked tender data to the database and vector index.",
         backstory=(
-            'You are a meticulous Data Engineer who ensures all tender intelligence is perfectly '
-            'formatted and stored without data loss.'
+            "A meticulous Data Engineer ensuring all tender intelligence is "
+            "perfectly formatted and persisted without data loss."
         ),
         tools=[DatabaseStorageTool()],
         llm=llm,
@@ -85,11 +91,11 @@ def create_agents(llm):
     )
 
     notification_agent = Agent(
-        role='Smart Notification Dispatcher',
-        goal='Evaluate the final ranked tender and dispatch priority alerts for high-match or urgent opportunities.',
+        role="Smart Notification Dispatcher",
+        goal="Dispatch priority alerts for high-match or urgent opportunities via email and log.",
         backstory=(
-            'You are an intelligent alerting system. You review the final tender intelligence and send '
-            'structured notifications so the business development team never misses a critical opportunity.'
+            "An intelligent alerting system that reviews final tender intelligence and sends "
+            "structured notifications so the BD team never misses a critical opportunity."
         ),
         tools=[NotificationTool()],
         llm=llm,

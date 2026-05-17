@@ -1,49 +1,50 @@
+"""
+db_tool.py — CrewAI Database Storage Tool (fixed imports).
+"""
+import sys, os, json
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from crewai.tools import BaseTool
 from typing import Type
 from pydantic import BaseModel, Field
-import json
-from database.db import get_db, init_db
-from database.models import Tender
+from db import get_db, init_db
+from models import Tender
+
 
 class DatabaseToolInput(BaseModel):
-    tender_data: str = Field(description="JSON string containing the fully analyzed and matched tender data.")
+    tender_data: str = Field(description="JSON string of fully analyzed and matched tender data.")
+
 
 class DatabaseStorageTool(BaseTool):
     name: str = "Tender Database Storage Tool"
-    description: str = "Saves the fully processed and matched tender information into the database."
+    description: str = "Saves fully processed and ranked tender information into the SQLite database."
     args_schema: Type[BaseModel] = DatabaseToolInput
 
     def _run(self, tender_data: str) -> str:
-        """Save tender data to database."""
         try:
-            # Ensure DB tables exist
             init_db()
-            
-            # Clean JSON if it has markdown formatting
-            if tender_data.startswith("```json"):
-                tender_data = tender_data.replace("```json", "", 1)
-            if tender_data.endswith("```"):
-                tender_data = tender_data[:-3]
-            
-            data = json.loads(tender_data.strip())
-            
-            # Use a session
-            db_generator = get_db()
-            db = next(db_generator)
-            
+            # Strip markdown fences
+            clean = tender_data.strip()
+            if clean.startswith("```"):
+                clean = clean.split("```")[-2] if "```" in clean[3:] else clean[3:]
+                clean = clean.lstrip("json").strip()
+
+            data = json.loads(clean)
+            db = next(get_db())
+
             try:
-                # Check if it already exists
-                existing = db.query(Tender).filter(Tender.tender_id == data.get("tender_id", "mock-id")).first()
+                tid = data.get("tender_id", "AGENT-" + str(hash(data.get("title", "")))[:8])
+                existing = db.query(Tender).filter(Tender.tender_id == tid).first()
                 if existing:
-                    return f"Tender {data.get('tender_id')} already exists in database."
-                
-                # Create new record
-                new_tender = Tender(
-                    tender_id=data.get("tender_id", "mock-id"),
-                    title=data.get("tender_type", "Unknown"), # Map tender_type to title for mock
+                    return f"Tender {tid} already exists."
+
+                record = Tender(
+                    tender_id=tid,
+                    title=data.get("title", data.get("tender_type", "Unknown")),
                     organization=data.get("organization", "Unknown"),
                     tender_type=data.get("tender_type", ""),
                     budget=data.get("budget", ""),
+                    budget_numeric=float(data.get("budget_numeric", 0) or 0),
                     deadline=data.get("deadline", ""),
                     emd_amount=data.get("emd_amount", ""),
                     required_experience=data.get("required_experience", ""),
@@ -51,17 +52,18 @@ class DatabaseStorageTool(BaseTool):
                     risk_level=data.get("risk_level", ""),
                     summary=data.get("summary", ""),
                     match_score=str(data.get("match_score", "")),
+                    match_score_num=float(data.get("match_score", 0) or 0),
                     recommendation=data.get("recommendation", ""),
-                    match_reason=data.get("reason", ""),
-                    raw_data=data
+                    match_reason=data.get("reason", data.get("match_reason", "")),
+                    raw_data=data,
                 )
-                
-                db.add(new_tender)
+                db.add(record)
                 db.commit()
-                return f"Successfully saved tender {new_tender.tender_id} to database."
-                
+                return f"Saved tender {tid} to database."
             finally:
-                db_generator.close()
-                
+                db.close()
+
+        except json.JSONDecodeError as e:
+            return f"JSON parse error: {e}"
         except Exception as e:
-            return f"Error saving to database: {str(e)}"
+            return f"Database error: {e}"

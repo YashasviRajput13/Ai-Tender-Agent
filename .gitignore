@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite3
+chroma_db/
+vector_store/
+
+# Logs
+*.log
+
+# Project specific
+scheduler_status.json
